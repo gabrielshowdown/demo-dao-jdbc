@@ -55,23 +55,11 @@ public class SellerDaoJDBC implements SellerDao {
 			st.setInt(1, id); // Interrogação recebe o 'id' que chegou de parametro
 			rs = st.executeQuery();
 			
-			if (rs.next()) { // Testar se veio algum resultado
-				
-				// Colocando o resultSet que é gerado em forma de tabela, em objetos
-				Department dep = new Department();
-				dep.setId(rs.getInt("DepartmentId")); // Acessar a coluna pelo resultSet
-				dep.setName(rs.getString("DepName")); // Apelido que aparece na consulta com o nome do departmento
-				
-				Seller sel = new Seller();
-				sel.setId(rs.getInt("Id"));
-				sel.setName(rs.getString("Name"));
-				sel.setEmail(rs.getString("Email"));
-				sel.setBaseSalary(rs.getDouble("BaseSalary"));
-				sel.setBirthDate(rs.getDate("BirthDate"));
-				sel.setDepartment(dep);
-				
-				return sel;
-				
+			if (rs.next()) { // Testar se veio algum resultado		
+				// Colocando o resultSet que é gerado em forma de tabela, em colunas
+				Department dep = instantiateDepartment(rs); 				
+				Seller sel = instantiateSeller(rs, dep);			
+				return sel;			
 			}
 			else {				
 				return null;				
@@ -85,10 +73,29 @@ public class SellerDaoJDBC implements SellerDao {
 			DB.closeResultSet(rs);
 		}
 	}
-
+	
 	@Override
 	public List<Seller> findAll() {
 		return null;
 	}
 
+	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException {
+		Seller sel = new Seller();
+		sel.setId(rs.getInt("Id"));
+		sel.setName(rs.getString("Name"));
+		sel.setEmail(rs.getString("Email"));
+		sel.setBaseSalary(rs.getDouble("BaseSalary"));
+		sel.setBirthDate(rs.getDate("BirthDate"));
+		sel.setDepartment(dep);
+		return sel;
+	}
+
+
+	// Métodos para instanciar um objeto
+	private Department instantiateDepartment(ResultSet rs) throws SQLException {
+		Department dep = new Department();
+		dep.setId(rs.getInt("DepartmentId")); // Acessar a coluna pelo resultSet
+		dep.setName(rs.getString("DepName")); // Apelido que aparece na consulta com o nome do departmento
+		return dep;
+	}
 }
