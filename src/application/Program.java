@@ -39,10 +39,15 @@ public class Program {
 		System.out.println("Inserted! New Id = " + newSeller.getId());
 		
 		System.out.println("\n=== TEST 5: Seller Update ===");
-		seller = sellerDao.findById(1); // Carregando os dados do vendedor no obj seller
+		seller = sellerDao.findById(1);
 		seller.setName("Martha Waine");
 		sellerDao.update(seller);
 		System.out.println("Update Completed");
+		
+		System.out.println("\n=== TEST 6: Seller Delete ===");
+		int id = 10;
+		sellerDao.deleteById(id);
+		System.out.println("Delete Completed");
 	}
 
 }
