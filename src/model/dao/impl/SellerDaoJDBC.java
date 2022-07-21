@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +28,46 @@ public class SellerDaoJDBC implements SellerDao {
 
 	// Métodos que devem ser implementados por que são declarados na interface
 	@Override
-	public void insert(Seller obj) {
+	public void insert(Seller sel) {
 		
+		PreparedStatement st = null;
+		
+		try {
+			
+			st = conn.prepareStatement(
+			 "INSERT INTO seller " +
+		     "(Name, Email, BirthDate, BaseSalary, DepartmentId) " +
+		     "VALUES " + 
+		     "(?, ?, ?, ?, ?)" ,
+		     Statement.RETURN_GENERATED_KEYS); // Retornar o Id do vendedor inserido
+		
+			st.setString(1, sel.getName());
+			st.setString(2, sel.getEmail());
+			st.setDate(3, new java.sql.Date(sel.getBirthDate().getTime()));
+			st.setDouble(4, sel.getBaseSalary());
+			st.setInt(5, sel.getDepartment().getId());
+			
+			int rowsAffected = st.executeUpdate();
+			
+			if (rowsAffected > 0) {
+				ResultSet rs = st.getGeneratedKeys();
+				if(rs.next()) { // Verificar se não é nulo
+					int id = rs.getInt(1);
+					sel.setId(id);
+					
+				}
+				DB.closeResultSet(rs);
+			}
+			else {
+				throw new DbException ("Erro inesperado, nenhuma linha afetada");
+			}
+		}
+		catch(SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+		}
 	}
 
 	@Override
@@ -157,6 +196,7 @@ public class SellerDaoJDBC implements SellerDao {
 
 	}
 
+	// Métodos para instanciar um objeto
 	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException {
 		Seller sel = new Seller();
 		sel.setId(rs.getInt("Id"));
@@ -167,9 +207,7 @@ public class SellerDaoJDBC implements SellerDao {
 		sel.setDepartment(dep);
 		return sel;
 	}
-
-
-	// Métodos para instanciar um objeto
+	
 	private Department instantiateDepartment(ResultSet rs) throws SQLException {
 		Department dep = new Department();
 		dep.setId(rs.getInt("DepartmentId")); // Acessar a coluna pelo resultSet
